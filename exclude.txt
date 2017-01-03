@@ -1,0 +1,7 @@
+/Users/jon_michelson/VirtualBoxVMs
+/Users/jon_michelson/Downloads
+/Users/jon_michelson/Dropbox
+/Users/jon_michelson/wekafiles
+/Users/jon_michelson/Library
+/Users/jon_michelson/GoogleDrive
+.*
