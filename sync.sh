@@ -1,28 +1,34 @@
 #!/bin/bash
 
-# Automate regular backups to Raspberry Pi cloud server at home
+# Automate incremental timestamped backups to Raspberry Pi cloud server at home
 
-# Local autobackup project dir path
+# Username
+USER="jon_michelson"
+
+# This is your sync.sh project's path
 PROJPATH="/Users/jon_michelson/Projects/autobackups"
 
-# Declare origin and destination paths
+# Set your origin and destination paths:
 ORIGPATH="/Users/jon_michelson"
 DESTPATH="/backupdrive/jon"
 
-# Pi's static IP address
-PI_IP="192.168.1.105"
+# Home network's public IP address
+HOMEIP=$(cat etc/ip.txt)
+
+# port options
+PORT=$(cat etc/port.txt)
 
 # Save old timestamp
-yes | cp ./time.txt ./time2.txt
+yes | cp etc/time.txt etc/time2.txt
 
 # Write new timestamp
-echo $(date "+%F") > ./time.txt
+echo $(date "+%F") > etc/time.txt
 
 # Log file blank creation
-echo "" > ./rsync-$(date "+%F").log
+echo "" > logs/rsync-$(date "+%F").log
 
 # Rsync command
-rsync -avhPR --chmod=Du=rwx,Dgo=rx,Fu=rw,Fgo=r --delete --log-file=$PROJPATH/rsync-$(date "+%F").log --exclude-from 'exclude.txt' --link-dest=$DESTPATH/$(cat $PROJPATH/time2.txt) -e ssh $ORIGPATH/ jon_michelson@$PI_IP:$DESTPATH/$(date "+%F")/
+rsync -avzhPR --chmod=Du=rwx,Dgo=rx,Fu=rw,Fgo=r --delete --log-file=$PROJPATH/logs/rsync-$(date "+%F").log --exclude-from 'etc/exclude.txt' --link-dest=$DESTPATH/$(cat $PROJPATH/etc/time2.txt) -e 'ssh -p '"$PORT"'' $ORIGPATH/ $USER@$HOMEIP:$DESTPATH/$(date "+%F")/
 
-# Sync log
-scp $PROJPATH/rsync-$(cat $PROJPATH/time.txt).log jon_michelson@$PI_IP:$DESTPATH/logs/rsyng-$(cat $PROJPATH/time.txt).log
+# Copy log to Rpi
+scp -P $PORT $PROJPATH/logs/rsync-$(cat $PROJPATH/etc/time.txt).log $USER@$HOMEIP:$DESTPATH/logs/rsync-$(cat $PROJPATH/etc/time.txt).log
